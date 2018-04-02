@@ -1,15 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Data.SqlClient;
+using System.Linq;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
 
 namespace AardvarkREST.Models
 {
     public partial class WFContext : DbContext
     {
-        private IWFChartRepository _wFChartRepository;
-
         public virtual DbSet<WFChart> WFChart { get; set; }
-
-        public virtual IWFChartRepository WFChartRepository { get => _wFChartRepository; set => _wFChartRepository = value; }
-
 
         public WFContext(DbContextOptions<WFContext> options)
         : base(options)
@@ -21,6 +23,27 @@ namespace AardvarkREST.Models
             {
                 entity.Property(e => e.ChartName).IsRequired();
             });
+        }
+
+        public virtual async Task<WFChart> WFChartGetByName(string ChartName)
+        {
+          return  await WFChart.FromSql("select ChartName, ChartId, ChartDescription from owf.wfChart " + ChartNameSelectTail(ChartName)
+                                                     ).SingleOrDefaultAsync();
+        }
+
+        public virtual async Task<IEnumerable<WFChart>> WFChartFindAll()
+        {
+            return await WFChart.FromSql("select ChartName, ChartId, ChartDescription from owf.wfChart ").ToListAsync();
+        }
+
+        private string ChartNameSelectTail(string ChartName)
+        {
+            string result = "where ChartName is null"; // always return empty dataset by table definitions
+            if (!string.IsNullOrEmpty(ChartName))
+            {
+                result = string.Format(" where ChartName = '{0}' ", ChartName);
+            }
+            return result;
         }
     }
 }

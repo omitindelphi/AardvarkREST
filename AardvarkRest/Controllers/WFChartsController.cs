@@ -21,16 +21,16 @@ namespace AardvarkREST.Controllers
     //[WFChartAPIExceptionFilter]
     public class WFChartsController : Controller
     {
-        private readonly WFContext _context;
+       // private readonly WFContext _context;
         private readonly IWFChartRepository _repository;
 
         /// <summary>
         /// Class to manipulate by creation and destruction of Workflow Charts as container for Tasks and items. 
         /// Chart defined by ChartName. ChartDescripption can be omitted. ChartId passed to POST, PUT, DELETE requests is omitted.
         /// </summary>
-        public WFChartsController(WFContext context, IWFChartRepository repository)
+        public WFChartsController( IWFChartRepository repository)
         {
-            _context = context;
+           // _context = context;
             _repository = repository;
         }
 
@@ -167,9 +167,9 @@ namespace AardvarkREST.Controllers
             }
         }
 
-        private bool WFChartExists(int id)
-        {
-            return _context.WFChart.Any(e => e.ChartId == id);
-        }
+       // private bool WFChartExists(int id)
+       // {
+       //     return _context.WFChart.Any(e => e.ChartId == id);
+       // }
     }
 }

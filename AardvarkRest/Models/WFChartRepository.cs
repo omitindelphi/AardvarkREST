@@ -33,8 +33,9 @@ namespace AardvarkREST.Models
         {
             WFChart result = null;
 
-            result = await _WFContext.WFChart.FromSql("select ChartName, ChartId, ChartDescription from owf.wfChart " + ChartNameSelectTail(ChartName)
-                                                     ).SingleOrDefaultAsync<WFChart>(); 
+            // result = await _WFContext.WFChart.FromSql("select ChartName, ChartId, ChartDescription from owf.wfChart " + ChartNameSelectTail(ChartName)
+            //                                          ).SingleOrDefaultAsync<WFChart>(); 
+            result = await _WFContext.WFChartGetByName(ChartName);
             return result;
         }
 
@@ -52,18 +53,6 @@ namespace AardvarkREST.Models
                                     " select ChartId, ChartName, ChartDescription from owf.WFChart where ChartId=@id";
             SqlParameter[] arrParam = { ChartName, ChartDescription };
 
-            /*
-            var connection = new SqlConnection(_WFContext.Database.GetDbConnection().ConnectionString);
-            var command = new SqlCommand(selectCommandScript, arrParam, connection);
-            
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    Console.WriteLine($"{reader[0]}:{reader[1]} ${reader[2]}");
-                }
-            }
-            */
 
             var ret = await _WFContext.WFChart.FromSql(selectCommandScript, arrParam).FirstOrDefaultAsync<WFChart>();
             return ret;
