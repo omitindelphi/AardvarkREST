@@ -107,7 +107,6 @@ namespace AardvarkREST.Controllers
         {
             try
             {
-                //Task<WFChart>
                 WFChart resultChart = await _repository.Save(wfChart);
                 var ret = Ok(resultChart);
                 return ret;
@@ -120,36 +119,9 @@ namespace AardvarkREST.Controllers
             }
         }
 
-        /*
-        /// DELETE: api/WFCharts/ChartName
-        [HttpDelete("{chartName}")]
-        public async Task<IActionResult> DeleteWFChart([FromRoute] string chartName)
-        {
-
-            WFChart chartToDelete = new WFChart();
-            chartToDelete.ChartName = chartName;
-            try
-            {
-                await _repository.Delete(chartToDelete);
-                return Ok();
-            }
-            catch( SQLWFException exx)
-            {
-                var ret = BadRequest(exx.Message);
-                ret.StatusCode = (int)HttpStatusCode.NotFound;
-                return ret;
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-        */
-
         [HttpDelete("DeleteById/{id}")]
         public async Task<IActionResult> DeleteWFChartById([FromRoute] int id)
         {
-        
             try
             {
                 await _repository.DeleteById(id);
@@ -166,10 +138,5 @@ namespace AardvarkREST.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-       // private bool WFChartExists(int id)
-       // {
-       //     return _context.WFChart.Any(e => e.ChartId == id);
-       // }
     }
 }

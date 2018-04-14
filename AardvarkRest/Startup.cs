@@ -41,6 +41,8 @@ namespace AardvarkREST
            // var connection = @"Server=LIVINGROOM\SQLEXPRESS;Database=OIMOpenWF;Trusted_Connection=True;ConnectRetryCount=0";
             services.AddDbContext<WFContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Transient);
             services.AddScoped<IWFChartRepository, WFChartRepository>();
+            services.AddScoped<IWFTaskRepository, WFTaskRepository>();
+            services.AddScoped<IWFRouteRepository, WFRouteRepository>();
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>
             {

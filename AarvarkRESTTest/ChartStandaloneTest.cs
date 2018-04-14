@@ -49,8 +49,8 @@ namespace AardvarkRESTIntegrationTest
                .AddEntityFrameworkSqlServer()
                .BuildServiceProvider();
 
-             //var connectionStringsAppSettings = new ConnectionStringsAppSettings();
-             //configuration.GetSection("ConnectionStrings").Bind(connectionStringsAppSettings);
+            //var connectionStringsAppSettings = new ConnectionStringsAppSettings();
+            //configuration.GetSection("ConnectionStrings").Bind(connectionStringsAppSettings);
 
             _server = new TestServer(new WebHostBuilder()
                 //.ConfigureServices(s => s.AddSingleton<IStartupConfigurationService, TestStartupConfigurationService>());
@@ -111,7 +111,7 @@ namespace AardvarkRESTIntegrationTest
             var response = await _client.PostAsync(request, contentBody);
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            return response; 
+            return response;
         }
 
         private async Task<HttpResponseMessage> SendDeleteRequest(string api, string body, string querystring = "")
@@ -129,13 +129,13 @@ namespace AardvarkRESTIntegrationTest
             var response = await _client.DeleteAsync(request);
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            return response; 
+            return response;
         }
 
         private async Task<HttpResponseMessage> SendDeleteByIdRequest(string api, int id)
         {
             string request;
-                request = api + id.ToString();
+            request = api + id.ToString();
             StringContent contentBody = new StringContent("");
             contentBody.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             var response = await _client.DeleteAsync(request);
@@ -159,7 +159,7 @@ namespace AardvarkRESTIntegrationTest
             var response = await _client.PutAsync(request, contentBody);
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            return response; 
+            return response;
         }
 
         /*
@@ -176,7 +176,7 @@ namespace AardvarkRESTIntegrationTest
         */
 
         [Fact]
-        public async Task ReturnSuccessReadingExistingCharts()
+        public async Task Return_001_SuccessReadingExistingCharts()
         {
             // Act
             var responseString = await GetApiResponseString("api/WFCharts");
@@ -189,14 +189,14 @@ namespace AardvarkRESTIntegrationTest
         }
 
         [Fact]
-        public async Task ReturnSuccessReadingExistingChartSingleByName()
+        public async Task Return_002_SuccessReadingExistingChartSingleByName()
         {
             // Act
             var actual = await GetApiResponseString("api/WFCharts/TestChart");
 
             // Assert
             //string expected = "{\"chartId\":1,\"chartName\":\"TestChart\",\"chartDescription\":null}";
-            WFChart expectedChart = new WFChart { ChartId = 1, ChartName = "TestChart", ChartDescription =""};
+            WFChart expectedChart = new WFChart { ChartId = 1, ChartName = "TestChart", ChartDescription = "" };
             WFChart actualChart = JsonConvert.DeserializeObject<WFChart>(actual);
             Assert.Equal(expectedChart.ChartId, actualChart.ChartId);
             Assert.Equal(expectedChart.ChartName, actualChart.ChartName);
@@ -204,7 +204,7 @@ namespace AardvarkRESTIntegrationTest
         }
 
         [Fact]
-        public async Task ReturnFailureReadingNonExistingChartSingleByName()
+        public async Task Return_003_FailureReadingNonExistingChartSingleByName()
         {
             // Act
             string MissChart = "Abracadabra";
@@ -215,7 +215,7 @@ namespace AardvarkRESTIntegrationTest
         }
 
         [Fact]
-        public async Task ReturnSuccessCreateDeleteNewChart()
+        public async Task Return_004_SuccessCreateDeleteNewChart()
         {
             string newChart = "ZZZChart";
             await CreateDeleteChart(newChart);
@@ -223,28 +223,28 @@ namespace AardvarkRESTIntegrationTest
 
 
         [Fact]
-        public async Task ReturnSuccessCreateDeleteChartWithSpace()
+        public async Task Return_005_SuccessCreateDeleteChartWithSpace()
         {
             string newChart = "YYY Chart";
             await CreateDeleteChart(newChart);
         }
 
         [Fact]
-        public async Task ReturnSuccessCreateDeleteInjectionAttack()
+        public async Task Return_006_SuccessCreateDeleteInjectionAttack()
         {
             string newChart = "XXX';drop table owf.WFTask";
             await CreateDeleteChart(newChart);
         }
 
         [Fact]
-        public async Task ReturnSuccessCreateDeleteInjectionQuoteAttack()
+        public async Task Return_007_SuccessCreateDeleteInjectionQuoteAttack()
         {
             string newChart = "XXX\";drop table owf.WFTask"; // quote char in the name
             await CreateChartFailureCheck(newChart);
         }
 
         [Fact]
-        public async Task ReturnSuccessCreateDeleteInjectionQuote2Attack()
+        public async Task Return_008_SuccessCreateDeleteInjectionQuote2Attack()
         {
             string newChart = "XXX\\\";drop table owf.WFTask"; // quote char in the name
             await CreateDeleteChart(newChart);
@@ -252,7 +252,7 @@ namespace AardvarkRESTIntegrationTest
 
 
         [Fact]
-        public async Task ReturnFailureDeleteNonExistingChart()
+        public async Task Return_009_FailureDeleteNonExistingChart()
         {
             string newChart = "oooDeleteAttempt";
             var ret = await SendDeleteRequest("api/WFCharts/" + newChart, "");
@@ -262,7 +262,7 @@ namespace AardvarkRESTIntegrationTest
         }
 
         [Fact]
-        public async Task ReturnSuccessUpdateChartDescriptionByBody()
+        public async Task Return_010_SuccessUpdateChartDescriptionByBody()
         {
             // Act
             var originalChartSerialization = await GetApiResponseString("api/WFCharts/TestChart");
@@ -271,7 +271,7 @@ namespace AardvarkRESTIntegrationTest
             string returnedDesc = returnedChart.ChartDescription;
             string updatedDesc = returnedDesc + "_1234567890";
             WFChart updatedChart = new WFChart { ChartId = 0, ChartName = returnedChart.ChartName, ChartDescription = updatedDesc };
-                  updatedChart.ChartName = returnedChart.ChartName;
+            updatedChart.ChartName = returnedChart.ChartName;
             string sendBody = JsonConvert.SerializeObject(updatedChart);
 
             var respObj = SendUpdateRequest("api/WFCharts", sendBody);
@@ -288,7 +288,7 @@ namespace AardvarkRESTIntegrationTest
         }
 
         [Fact]
-        public async Task ReturnSuccessUpdateChartDescriptionByRoute()
+        public async Task Return_011_SuccessUpdateChartDescriptionByRoute()
         {
             // Act
             string chartUpdate = "TestChart";
@@ -298,10 +298,10 @@ namespace AardvarkRESTIntegrationTest
             string returnedDesc = originalChart.ChartDescription;
             string updatedDesc = returnedDesc + "_1234567890";
 
-            var respObj = await SendUpdateRequest("api/WFCharts/" + chartUpdate + "/" + updatedDesc, "" );
+            var respObj = await SendUpdateRequest("api/WFCharts/" + chartUpdate + "/" + updatedDesc, "");
             var responseContent = await respObj.Content.ReadAsStringAsync();
             int returnedUpdCode = (int)respObj.StatusCode;
-            Assert.True((returnedUpdCode >= 200 && returnedUpdCode <=299), "Update Chart by route not success");
+            Assert.True((returnedUpdCode >= 200 && returnedUpdCode <= 299), "Update Chart by route not success");
             WFChart updateReturnedChart = JsonConvert.DeserializeObject<WFChart>(responseContent);
             Assert.True(updateReturnedChart.ChartName == chartUpdate, "returned wrong ChartName");
             Assert.True(updateReturnedChart.ChartDescription == updatedDesc, "returned wrong ChartDescription");
@@ -320,13 +320,13 @@ namespace AardvarkRESTIntegrationTest
             Assert.True((returnedCode >= 400) && (returnedCode <= 499), "Returned code for Create post do not indicate failure when expected");
         }
 
-       private async Task CreateDeleteChart(string newChart)
+        private async Task CreateDeleteChart(string newChart)
         {
             string newChartJson = "{\"ChartId\":3,\"ChartName\":\"" + newChart + "\",\"ChartDescription\":null}";
             var returnedPost = await PostApiResponseString("api/WFCharts", newChartJson);
 
             int returnedCode = (int)returnedPost.StatusCode;
-            Assert.True( (returnedCode >= 200) && (returnedCode <= 299), "Returned code for Create post do not indicate success" );
+            Assert.True((returnedCode >= 200) && (returnedCode <= 299), "Returned code for Create post do not indicate success");
 
             string actual = await returnedPost.Content.ReadAsStringAsync();
 
@@ -370,8 +370,8 @@ namespace AardvarkRESTIntegrationTest
             Assert.True((returnedDelCode >= 200) && (returnedDelCode <= 299), "Returned code for Delete send do not indicate success");
         }
 
-        [Fact] 
-        public async Task ReturnConflictUpdateDescriptionByBodyAndRouteRouteWin()
+        [Fact]
+        public async Task Return_012_ConflictUpdateDescriptionByBodyAndRouteRouteWin()
         {
 
             // Act
@@ -381,22 +381,140 @@ namespace AardvarkRESTIntegrationTest
 
             string originalDesc = originalChart.ChartDescription;
             string routeDesc = "_RouteDescription";
-            string bodyDesc =   "_BodyDescription";
+            string bodyDesc = "_BodyDescription";
 
-            WFChart updatedBodyChart = new WFChart  { ChartId = 0, ChartName = originalChart.ChartName, ChartDescription = bodyDesc };
-            string bodyWithDescription = JsonConvert.SerializeObject( updatedBodyChart);
+            WFChart updatedBodyChart = new WFChart { ChartId = 0, ChartName = originalChart.ChartName, ChartDescription = bodyDesc };
+            string bodyWithDescription = JsonConvert.SerializeObject(updatedBodyChart);
 
             var respObj = await SendUpdateRequest("api/WFCharts/" + chartUpdate + "/" + routeDesc, bodyWithDescription);
             int returnedCode = (int)respObj.StatusCode;
             Assert.True((returnedCode >= 200) && (returnedCode <= 299), "Returned code for Update send do not indicate success");
-        
+
             var updateContent = await respObj.Content.ReadAsStringAsync();
             WFChart respChart = JsonConvert.DeserializeObject<WFChart>(updateContent);
             //cleaning up 
-            Assert.True( (respChart.ChartDescription == routeDesc), "In case of discrepancy between body and route preference to route");
-            var cleanObj = await SendUpdateRequest("api/WFCharts/" + chartUpdate+"/", "");
+            Assert.True((respChart.ChartDescription == routeDesc), "In case of discrepancy between body and route preference to route");
+            var cleanObj = await SendUpdateRequest("api/WFCharts/" + chartUpdate + "/", "");
             var cleanContent = await cleanObj.Content.ReadAsStringAsync();
 
+        }
+
+        [Fact]
+        public async Task Return_013_SuccessReadingExistingTasksFromCharts()
+        {
+            // Act
+            var responseString = await GetApiResponseString("api/WFTask/TestChart");
+
+            // Assert
+            WFTask[] expectedTasks = JsonConvert.DeserializeObject<WFTask[]>(responseString);
+            /*
+                        [{"taskId":1,"chartName":"TestChart","taskName":"InTask","taskDescription":null},{"taskId":2,"chartName":"TestChart","taskName":"Process","taskDescription":null},{"taskId":3,"chartName":"TestChart","taskName":"Final","taskDescription":null}]
+            */
+            Assert.True(expectedTasks.Count() > 0, "Empty list of WF tasks from TestChart");
+        }
+
+        [Fact]
+        public async Task Return_014_SuccessReadingSpecificTaskFromCharts()
+        {
+            var response = await GetApiResponseString("api/WFTask/TestChart/Task/InTask");
+
+            WFTask expectedTask = JsonConvert.DeserializeObject<WFTask>(response);
+
+            Assert.True(expectedTask.TaskName.Equals("InTask"), "Read unexpected task from TestChart workflow ");
+        }
+
+        [Fact]
+        public async Task Return_015_SuccessCreateDeleteTask()
+        {
+            string aTask = "Abracadaber";
+            var returnedPost = await PostApiResponseString("api/WFTask/TestChart/Task/"+aTask, "");
+            int returnedCode = (int)returnedPost.StatusCode;
+            Assert.True((returnedCode >= 200) && (returnedCode <= 299), "Returned code for Create post do not indicate success");
+
+            string actual = await returnedPost.Content.ReadAsStringAsync();
+            WFTask actualTask = JsonConvert.DeserializeObject<WFTask>(actual);
+
+            int chartId = actualTask.ChartId;
+            int taskId = actualTask.TaskId;
+            var deletedResponse = await SendDeleteRequest("api/WFTask/"+ chartId.ToString() + "/Task/" + taskId.ToString(), "");
+            int deletedcode = (int)deletedResponse.StatusCode;
+
+            Assert.True((deletedcode >= 200) && (deletedcode <= 299), "Unexpected return from Delete Task request: " + deletedcode.ToString());
+        }
+
+
+        [Fact]
+        public async Task Return_016_SuccessCreateUpdateTask()
+        {
+            string aTask = "Abracadaber";
+            var returnedPost = await PostApiResponseString("api/WFTask/TestChart/Task/" + aTask, "");
+            int returnedCode = (int)returnedPost.StatusCode;
+            Assert.True((returnedCode >= 200) && (returnedCode <= 299), "Returned code for Create post do not indicate success");
+
+            string created = await returnedPost.Content.ReadAsStringAsync();
+            WFTask createdTask = JsonConvert.DeserializeObject<WFTask>(created);
+
+            int chartId = createdTask.ChartId;
+            int taskId = createdTask.TaskId;
+
+            createdTask.TaskDescription = "Amazed Zovirax";
+            var updatedResp = SendUpdateRequest("api/WFTask/" + createdTask.ChartName + "/Task/" + createdTask.TaskName + "/Description/" + createdTask.TaskDescription, "");
+            int updatedCode = (int)updatedResp.Result.StatusCode;
+            Assert.True((updatedCode >= 200) && (updatedCode <= 299), "Unexpected return from Update Task request: " + updatedCode.ToString());
+
+            string updatedContent = await updatedResp.Result.Content.ReadAsStringAsync();
+            WFTask updatedTask = JsonConvert.DeserializeObject<WFTask>(updatedContent);
+            Assert.True((updatedTask.TaskId == createdTask.TaskId) && (updatedTask.TaskDescription == createdTask.TaskDescription));
+
+            var deletedResponse = await SendDeleteRequest("api/WFTask/" + chartId.ToString() + "/Task/" + taskId.ToString(), "Mismatch on task update");
+            int deletedcode = (int)deletedResponse.StatusCode;
+
+
+            Assert.True((deletedcode >= 200) && (deletedcode <= 299), "Unexpected return from Delete Task request: " + deletedcode.ToString());
+        }
+
+
+        [Fact]
+        public async Task Return_017_SuccessCreateRoute()
+        {
+            string aRoute = "Ok";
+            string aChart = "TestChart";
+            string aTask01 = "InTask";
+            string aTask02 = "Process";
+            string aTask03 = "Final";
+            var returnedPost01 = await PostApiResponseString("api/WFRoute/" + aChart +"/TaskFrom/" + aTask01 +"/TaskTo/" + aTask02 +"/RouteCode/" + aRoute, "");
+            int returnedCode01 = (int)returnedPost01.StatusCode;
+            Assert.True((returnedCode01 >= 200) && (returnedCode01 <= 299), string.Format("Returned code for Create Route From '{0}' To '{1}' post do not indicate success", aTask01, aTask02));
+            string updatedRoute01 = await returnedPost01.Content.ReadAsStringAsync();
+            WFRoute Route01 = JsonConvert.DeserializeObject<WFRoute>(updatedRoute01);
+            Assert.True(Route01.TaskFrom == aTask01, "Unexpected starting task for route");
+            Assert.True(Route01.RouteCode == aRoute, "Unexpected starting Route Code");
+
+            var returnedPost02 = await PostApiResponseString("api/WFRoute/" + aChart + "/TaskFrom/" + aTask02 + "/TaskTo/" + aTask03 + "/RouteCode/" + aRoute, "");
+            int returnedCode02 = (int)returnedPost01.StatusCode;
+            Assert.True((returnedCode02 >= 200) && (returnedCode02 <= 299), string.Format("Returned code for Create Route From '{0}' To '{1}' post do not indicate success", aTask01, aTask02));
+            string updatedRoute02 = await returnedPost02.Content.ReadAsStringAsync();
+            WFRoute Route02 = JsonConvert.DeserializeObject<WFRoute>(updatedRoute02);
+            Assert.True(Route02.TaskTo == aTask03, "Unexpected final task for route");
+            Assert.True(Route02.RouteCode == aRoute, "Unexpected final Route Code");
+
+        }
+
+
+        [Fact]
+        public async Task Return_018_SuccessReadingAllRoutesFromChart()
+        {
+
+            Return_017_SuccessCreateRoute();
+
+            var responseString = await GetApiResponseString("api/WFRoute/TestChart");
+
+            // Assert
+            WFRoute[] actualRoutes = JsonConvert.DeserializeObject<WFRoute[]>(responseString);
+            /*
+                        
+            */
+            Assert.True(actualRoutes.Count() > 0, "Empty list of WF tasks from TestChart");
         }
     }
 }

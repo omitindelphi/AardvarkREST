@@ -5,13 +5,11 @@ using System.Threading.Tasks;
 
 namespace AardvarkREST.Models
 {
-    interface IWFTaskRepository
+    public interface IWFTaskRepository
     {
         Task<WFTask> Get(string ChartName, string TaskName);
         Task<WFTask> Save(WFTask Task);
-        //Task Delete(string ChartName, string TaskName);
-        Task DeleteById(string ChartName,int TaskId);
-        //Task Update(WFChart Chart);
-        Task<IEnumerable<WFTask>> FindAll();
+        Task DeleteById(int ChartId,int TaskId);
+        Task<IEnumerable<WFTask>> FindAll(string ChartName);
     }
 }

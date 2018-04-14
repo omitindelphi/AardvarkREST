@@ -9,9 +9,10 @@ namespace AardvarkREST.Models
     {
         Task<WFChart> Get(string ChartName);
         Task<WFChart> Save(WFChart Chart);
-        Task Delete(WFChart Chart);
         Task DeleteById(int id);
-        //Task Update(WFChart Chart);
         Task<IEnumerable<WFChart>> FindAll();
+
+        //Task Delete(WFChart Chart);
+        //Task Update(WFChart Chart);
     }
 }
