@@ -473,6 +473,25 @@ namespace AardvarkRESTIntegrationTest
             Assert.True((deletedcode >= 200) && (deletedcode <= 299), "Unexpected return from Delete Task request: " + deletedcode.ToString());
         }
 
+        private async  Task<WFRoute> PostRoute(string ChartName, string aTaskFrom, string aTaskTo, string aRouteCode)
+        {
+            var returnedPost01 = await PostApiResponseString("api/WFRoute/" + ChartName + "/TaskFrom/" + aTaskFrom + "/TaskTo/" + aTaskTo + "/RouteCode/" + aRouteCode, "");
+            int returnedCode01 = (int)returnedPost01.StatusCode;
+            Assert.True((returnedCode01 >= 200) && (returnedCode01 <= 299), string.Format("Returned code for Create Route From '{0}' To '{1}' for Chart '{2}' post do not indicate success", aTaskFrom, aTaskTo, ChartName));
+            string updatedRoute01 = await returnedPost01.Content.ReadAsStringAsync();
+            WFRoute Route01 = JsonConvert.DeserializeObject<WFRoute>(updatedRoute01);
+            return Route01;
+        }
+
+        private async Task<WFRoute> PostShortRoute(string ChartName, string aTaskFrom, string aTaskTo)
+        {
+            var returnedPost01 = await PostApiResponseString("api/WFRoute/" + ChartName + "/TaskFrom/" + aTaskFrom + "/TaskTo/" + aTaskTo , "");
+            int returnedCode01 = (int)returnedPost01.StatusCode;
+            Assert.True((returnedCode01 >= 200) && (returnedCode01 <= 299), string.Format("Returned code for Create Short Route From '{0}' To '{1}' for Chart '{2}' post do not indicate success", aTaskFrom, aTaskTo, ChartName));
+            string updatedRoute01 = await returnedPost01.Content.ReadAsStringAsync();
+            WFRoute Route01 = JsonConvert.DeserializeObject<WFRoute>(updatedRoute01);
+            return Route01;
+        }
 
         [Fact]
         public async Task Return_017_SuccessCreateRoute()
@@ -482,39 +501,93 @@ namespace AardvarkRESTIntegrationTest
             string aTask01 = "InTask";
             string aTask02 = "Process";
             string aTask03 = "Final";
-            var returnedPost01 = await PostApiResponseString("api/WFRoute/" + aChart +"/TaskFrom/" + aTask01 +"/TaskTo/" + aTask02 +"/RouteCode/" + aRoute, "");
-            int returnedCode01 = (int)returnedPost01.StatusCode;
-            Assert.True((returnedCode01 >= 200) && (returnedCode01 <= 299), string.Format("Returned code for Create Route From '{0}' To '{1}' post do not indicate success", aTask01, aTask02));
-            string updatedRoute01 = await returnedPost01.Content.ReadAsStringAsync();
-            WFRoute Route01 = JsonConvert.DeserializeObject<WFRoute>(updatedRoute01);
+
+            WFRoute Route01 = await PostRoute(aChart, aTask01, aTask02, aRoute);
             Assert.True(Route01.TaskFrom == aTask01, "Unexpected starting task for route");
             Assert.True(Route01.RouteCode == aRoute, "Unexpected starting Route Code");
 
-            var returnedPost02 = await PostApiResponseString("api/WFRoute/" + aChart + "/TaskFrom/" + aTask02 + "/TaskTo/" + aTask03 + "/RouteCode/" + aRoute, "");
-            int returnedCode02 = (int)returnedPost01.StatusCode;
-            Assert.True((returnedCode02 >= 200) && (returnedCode02 <= 299), string.Format("Returned code for Create Route From '{0}' To '{1}' post do not indicate success", aTask01, aTask02));
-            string updatedRoute02 = await returnedPost02.Content.ReadAsStringAsync();
-            WFRoute Route02 = JsonConvert.DeserializeObject<WFRoute>(updatedRoute02);
+            WFRoute Route02 = await PostRoute(aChart, aTask02, aTask03, aRoute);
             Assert.True(Route02.TaskTo == aTask03, "Unexpected final task for route");
             Assert.True(Route02.RouteCode == aRoute, "Unexpected final Route Code");
-
         }
-
 
         [Fact]
         public async Task Return_018_SuccessReadingAllRoutesFromChart()
         {
-
-            Return_017_SuccessCreateRoute();
+            string aRoute = "Ok";
+            string aChart = "TestChart";
+            string aTask01 = "InTask";
+            string aTask02 = "Process";
+            string aTask03 = "Final";
+            WFRoute Route01 = await PostRoute(aChart, aTask01, aTask02, aRoute);
+            WFRoute Route02 = await PostRoute(aChart, aTask02, aTask03, aRoute);
 
             var responseString = await GetApiResponseString("api/WFRoute/TestChart");
-
-            // Assert
             WFRoute[] actualRoutes = JsonConvert.DeserializeObject<WFRoute[]>(responseString);
-            /*
-                        
-            */
-            Assert.True(actualRoutes.Count() > 0, "Empty list of WF tasks from TestChart");
+            Assert.True(actualRoutes.Count() > 0, "Empty list of WF routes from TestChart");
         }
+
+        [Fact]
+        public async Task Return_019_SuccessDeleteRoute()
+        {
+            string aRoute = "Ok";
+            string aChart = "TestChart";
+            string aTask01 = "InTask";
+            string aTask02 = "Process";
+            string aTask03 = "Final";
+            WFRoute Route01 = await PostRoute(aChart, aTask01, aTask02, aRoute);
+            WFRoute Route02 = await PostRoute(aChart, aTask02, aTask03, aRoute);
+            var deletedResponse = await SendDeleteRequest(string.Format("api/WFRoute/{0}/TaskFrom/{1}/TaskTo/{2}", aChart, aTask02, aTask03), "");
+            int deletedcode = (int)deletedResponse.StatusCode;
+            Assert.True((deletedcode >= 200) && (deletedcode <= 299), string.Format("Returned code for Delete Route From '{0}' To '{1}' for Chart '{2}' post do not indicate success", aTask02, aTask03, aChart));
+
+            var responseString = await GetApiResponseString("api/WFRoute/" + aChart);
+            WFRoute[] actualRoutes = JsonConvert.DeserializeObject<WFRoute[]>(responseString);
+            Assert.True(actualRoutes.Count() == 1, "Wrong number of returned routes");
+        }
+
+        private async void RemoveAllRoutes()
+        {
+            string aRoute = "Ok";
+            string aChart = "TestChart";
+            string aTask01 = "InTask";
+            string aTask02 = "Process";
+            string aTask03 = "Final";
+            WFRoute Route01 = await PostRoute(aChart, aTask01, aTask02, aRoute);
+            WFRoute Route02 = await PostRoute(aChart, aTask02, aTask03, aRoute);
+            var deletedResponse01 = await SendDeleteRequest(string.Format("api/WFRoute/{0}/TaskFrom/{1}/TaskTo/{2}", aChart, aTask02, aTask03), "");
+            var deletedResponse02 = await SendDeleteRequest(string.Format("api/WFRoute/{0}/TaskFrom/{1}/TaskTo/{2}", aChart, aTask01, aTask02), "");
+
+            var responseString = await GetApiResponseString("api/WFRoute/" + aChart);
+            WFRoute[] actualRoutes = JsonConvert.DeserializeObject<WFRoute[]>(responseString);
+            Assert.True(actualRoutes.Count() == 0, "Wrong number of returned routes in no-route chart");
+        }
+
+        [Fact]
+        public async Task Return_020_SuccessUpdateRoute()
+        {
+            string aRoute = "Ok";
+            string sLongRoute = "OkTest";
+            string sAnotherRoute = "OkAnother";
+            string aChart = "TestChart";
+            string aTask01 = "InTask";
+            string aTask02 = "Process";
+
+            RemoveAllRoutes();
+
+            WFRoute RouteA02 = await PostRoute(aChart, aTask01, aTask02, sLongRoute);
+            WFRoute RouteZ02 = await PostShortRoute(aChart, aTask01, aTask02);
+
+            var updatedResp = SendUpdateRequest("api/WFRoute/" + aChart + "/TaskFrom/" + aTask01 + "/TaskTo/" + aTask02 + "/RouteCode/" + sAnotherRoute, "");
+            int updatedCode = (int)updatedResp.Result.StatusCode;
+            Assert.True((updatedCode >= 200) && (updatedCode <= 299), "Unexpected return from Update Task request: " + updatedCode.ToString());
+            string updatedContent = await updatedResp.Result.Content.ReadAsStringAsync();
+            WFRoute RouteAnother = JsonConvert.DeserializeObject<WFRoute>(updatedContent);
+
+            Assert.True(RouteAnother.RouteCode == sAnotherRoute, "unexpected route after PUT update");
+            Assert.True(RouteA02.RouteCode == sLongRoute, "Unexpected route after route creation");
+            Assert.True(RouteZ02.RouteCode == aRoute, "Unexpected route after route update");
+        }
+
     }
 }

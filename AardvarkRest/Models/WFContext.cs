@@ -226,5 +226,26 @@ namespace AardvarkREST.Models
                 throw new SQLWFException(string.Format("Failure to delete ChartName=\"{0}\" TaskName = \"{1}\"- returned value {2} from DeleteById routine", ChartId, RouteId, ret));
 
         }
+
+        public async Task WFRouteDeleteByName(string ChartName, string NameFrom, string NameTo)
+        {
+
+            var ChartNameParameter = new SqlParameter("ChartName", ChartName);
+            var TaskNameFromParameter = new SqlParameter("TaskNameFrom", NameFrom);
+            var TaskNameToParameter = new SqlParameter("TaskNameTo", NameTo);
+            SqlParameter[] arrParam = { ChartNameParameter, TaskNameFromParameter, TaskNameToParameter };
+
+            var ret = await Database.ExecuteSqlCommandAsync("delete from owf.WFRoute where RouteId = ("
+            + " select  a.RouteId "
+                + " from owf.wfRoute a "
+                + " inner join owf.wfTask b on a.FromTaskId = b.TaskId "
+                + " inner join owf.wfTask c on a.ToTaskId = c.TaskId"
+                + " inner join owf.wfChart d on a.ChartId = d.ChartId where d.ChartName = @ChartName and b.TaskName = @TaskNameFrom and c.TaskName = @TaskNameTo "
+                +" )"
+                 , arrParam);
+            if (ret != 1)
+                throw new SQLWFException(string.Format("Failure to delete ChartName=\"{0}\" From = \"{1}\"- to \"{2}\"  returned value {3} from DeleteById routine", ChartName, NameFrom, NameTo, ret));
+
+        }
     }
 }
