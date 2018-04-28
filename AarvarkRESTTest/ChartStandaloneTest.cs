@@ -80,6 +80,19 @@ namespace AardvarkRESTIntegrationTest
             return await response.Content.ReadAsStringAsync();
         }
 
+        private async Task<HttpResponseMessage> GetApiResponse(string api, string querystring = "")
+        {
+            string request;
+            if (!string.IsNullOrEmpty(querystring))
+            {
+                request = api + "?" + querystring;
+            }
+            else
+                request = api;
+            var response = await _client.GetAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            return response;
+        }
 
         private async Task<string> GetApiAnyResponse(string api, string querystring = "")
         {
@@ -553,13 +566,25 @@ namespace AardvarkRESTIntegrationTest
             string aTask01 = "InTask";
             string aTask02 = "Process";
             string aTask03 = "Final";
-            WFRoute Route01 = await PostRoute(aChart, aTask01, aTask02, aRoute);
-            WFRoute Route02 = await PostRoute(aChart, aTask02, aTask03, aRoute);
-            var deletedResponse01 = await SendDeleteRequest(string.Format("api/WFRoute/{0}/TaskFrom/{1}/TaskTo/{2}", aChart, aTask02, aTask03), "");
-            var deletedResponse02 = await SendDeleteRequest(string.Format("api/WFRoute/{0}/TaskFrom/{1}/TaskTo/{2}", aChart, aTask01, aTask02), "");
+            Task<WFRoute> Task01 = PostRoute(aChart, aTask01, aTask02, aRoute);
+            Task01.Wait();
+            WFRoute Route01 = Task01.Result;
 
-            var responseString = await GetApiResponseString("api/WFRoute/" + aChart);
+            Task<WFRoute> Task02 = PostRoute(aChart, aTask02, aTask03, aRoute);
+            Task02.Wait();
+            WFRoute Route02 = Task02.Result;
+            
+            Task delTask01 = SendDeleteRequest(string.Format("api/WFRoute/{0}/TaskFrom/{1}/TaskTo/{2}", aChart, aTask02, aTask03), "");
+            delTask01.Wait();
+            
+            Task delTask02 = SendDeleteRequest(string.Format("api/WFRoute/{0}/TaskFrom/{1}/TaskTo/{2}", aChart, aTask01, aTask02), "");
+            delTask02.Wait();
+
+            Task<string> controlTask = GetApiResponseString("api/WFRoute/" + aChart);
+            controlTask.Wait();
+            var responseString = controlTask.Result;
             WFRoute[] actualRoutes = JsonConvert.DeserializeObject<WFRoute[]>(responseString);
+
             Assert.True(actualRoutes.Count() == 0, "Wrong number of returned routes in no-route chart");
         }
 
@@ -588,6 +613,86 @@ namespace AardvarkRESTIntegrationTest
             Assert.True(RouteA02.RouteCode == sLongRoute, "Unexpected route after route creation");
             Assert.True(RouteZ02.RouteCode == aRoute, "Unexpected route after route update");
         }
+
+        [Fact]
+        public async Task Return_021_SuccessSingleRoute()
+        {
+            string aRoute = "Ok";
+            string sLongRoute = "OkTest";
+            string sAnotherRoute = "OkAnother";
+            string aChart = "TestChart";
+            string aTask01 = "InTask";
+            string aTask02 = "Process";
+
+            RemoveAllRoutes();
+
+            await Task.WhenAll();
+            WFRoute RouteA02 = await PostRoute(aChart, aTask01, aTask02, sLongRoute);
+            await Task.WhenAll();
+
+            var updatedResp = await GetApiResponseString("api/WFRoute/" + aChart + "/TaskFrom/" + aTask01 + "/TaskTo/" + aTask02 , "");
+            WFRoute RouteAnother = JsonConvert.DeserializeObject<WFRoute>(updatedResp);
+
+            Assert.True(RouteAnother.RouteCode == sLongRoute, string.Format("Obtained route {0}, expected {1}", RouteAnother.RouteCode, sLongRoute));
+
+        }
+
+        private async Task<WFItemStatus> ItemDropOff(string ChartName, string TaskName, string ItemName)
+        {
+            var returnedItem01 = await PostApiResponseString("api/WFItem/" + ChartName + "/TaskActionPut/" + TaskName + "/Item/" + ItemName, "");
+            string insertedItemString = await returnedItem01.Content.ReadAsStringAsync();
+            WFItemStatus ItemStatus = JsonConvert.DeserializeObject<WFItemStatus>(insertedItemString);
+            return ItemStatus;
+        }
+
+        [Fact]
+        public async Task Return_030_SuccessInsertItem()
+        {
+            string aRoute = "Ok";
+            //string sLongRoute = "OkTest";
+            //string sAnotherRoute = "OkAnother";
+            string aChart = "TestChart";
+            string aTask01 = "InTask";
+            string aTask02 = "Process";
+
+            string aItemName = Guid.NewGuid().ToString();
+
+            RemoveAllRoutes();
+
+            Task<WFRoute> TaskRouteA02 = PostRoute(aChart, aTask01, aTask02, aRoute);
+            TaskRouteA02.Wait();
+            
+            Task<WFItemStatus> inserted = ItemDropOff(aChart, aTask01, aItemName);
+            inserted.Wait();
+            WFItemStatus ItemStatus01 = inserted.Result;
+            Assert.True(ItemStatus01.ItemTaskStatus == WFItemTaskStatusValue.Completed, string.Format("Obtained status {0}, expected {1}", ItemStatus01.ItemTaskStatus, WFItemTaskStatusValue.Completed));
+        }
+
+        [Fact]
+        public async Task Return_031_SuccessViewItemStatus()
+        {
+            string aRoute = "Ok";
+            string aChart = "TestChart";
+            string aTask01 = "InTask";
+            string aTask02 = "Process";
+
+            string aItemName = Guid.NewGuid().ToString();
+
+            RemoveAllRoutes();
+
+            Task<WFRoute> TaskRouteA02 = PostRoute(aChart, aTask01, aTask02, aRoute);
+            TaskRouteA02.Wait();
+
+            Task<WFItemStatus> inserted = ItemDropOff(aChart, aTask01, aItemName);
+            inserted.Wait();
+            WFItemStatus ItemStatus01 = inserted.Result;
+
+            string allItemTasksString =  await GetApiResponseString("api/WFItem/" + aChart + "/Item/" + aItemName, "");
+            WFItemStatus[] listItemStatuses = JsonConvert.DeserializeObject<WFItemStatus[]>(allItemTasksString);
+
+            Assert.True(listItemStatuses.Count() >= 2, string.Format("Number of tasks {0}, expected {1}", listItemStatuses.Count(), 2));
+        }
+
 
     }
 }

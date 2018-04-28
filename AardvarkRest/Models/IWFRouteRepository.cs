@@ -9,7 +9,6 @@ namespace AardvarkREST.Models
     {
         Task<WFRoute> Get(string ChartName, string TaskFrom, string TaskTo);
         Task<WFRoute> Save(WFRoute Route);
-        Task DeleteById(int ChartId, int RouteId);
         Task DeleteByNames(string ChartName, string TaskNameFrom, string TaskNameTo);
         Task<IEnumerable<WFRoute>> FindAll(string ChartName);
     }

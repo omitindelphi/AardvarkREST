@@ -43,6 +43,7 @@ namespace AardvarkREST
             services.AddScoped<IWFChartRepository, WFChartRepository>();
             services.AddScoped<IWFTaskRepository, WFTaskRepository>();
             services.AddScoped<IWFRouteRepository, WFRouteRepository>();
+            services.AddScoped<IWFItemRepository, WFItemRepository>();
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>
             {

@@ -31,15 +31,14 @@ namespace AardvarkREST.Controllers
             return _routeRepository.FindAll(ChartName).Result;
         }
 
-        /*
-        // GET: api/WFRoute/5
-        [HttpGet("{id}", Name = "GetRoute")]
-        public string GetRoute(int id)
+        [HttpGet("{ChartName}/TaskFrom/{TaskFrom}/TaskTo/{TaskTo}", Name = "GetSingleRoute")]
+        public async Task<IActionResult> GetSingleRoute(string ChartName, string TaskFrom, string TaskTo)
         {
-            return "value";
+            var aRet = await _routeRepository.Get(ChartName, TaskFrom, TaskTo);
+            WFRoute result = aRet;
+            return Ok(result);
         }
-        */
-        
+
         // POST: api/WFRoute
         [HttpPost("{ChartName}/TaskFrom/{TaskFrom}/TaskTo/{TaskTo}/RouteCode/{RouteCode}", Name = "PostFullRoute")]
         [HttpPut("{ChartName}/TaskFrom/{TaskFrom}/TaskTo/{TaskTo}/RouteCode/{RouteCode}", Name = "PostFullRoute")]
