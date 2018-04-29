@@ -10,7 +10,7 @@ namespace AardvarkREST.Models
     public enum WFItemTaskStatusValue
     {
         Ready = 0,
-        InProgress = 1,
+        InProcess = 1,
         Completed = 2,
         Rejected = 3,
         OnHold = 4,

@@ -279,15 +279,23 @@ namespace AardvarkREST.Models
 
         public async Task<WFItemStatus> WFNavigationItemGet(string ChartName, string TaskName, string ItemName)
         {
+            SqlParameter ItemNameParameter = null;
             var ChartNameParameter = new SqlParameter("qChartName", ChartName);
             var TaskNameParameter = new SqlParameter("qTaskName", TaskName);
-            var ItemNameParameter = new SqlParameter("qItemName", ItemName);
+            if (ItemName.Length > 0)
+            {
+                ItemNameParameter = new SqlParameter("qItemName", ItemName);
+            }
+            else
+            {
+                ItemNameParameter = new SqlParameter("qItemName", null);
+            }
             SqlParameter[] arrParam = { ChartNameParameter, TaskNameParameter, ItemNameParameter };
 
             string SqlText =
           "  declare @ext table(ItemId int, ItemName varchar(64), ItemStatusId int) "
         + "  insert into @ext(ItemId, ItemName, ItemStatusId) "
-        + "    exec owf.ItemGet @qChartName, @qTaskName; "
+        + "    exec owf.ItemGet @qChartName, @qTaskName, @qItemName "
         + "              select format(a.TaskId,'000000000000') +format(a.ItemId, '000000000000') as sid, a.ItemId, a.TaskId, b.ItemName, c.TaskName, d.ChartName, cast(a.ItemStatusId as int) as ItemTaskStatus "
         + "  from owf.wfItemTask a inner join owf.wfItem b on a.ItemId = b.ItemId "
         + "  inner join owf.wfTask c on a.TaskId = c.taskId  "

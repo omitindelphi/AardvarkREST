@@ -26,7 +26,7 @@ namespace AardvarkREST.Controllers
             return _itemRepository.GetAll(ChartName, ItemName).Result;
         }
 
-        [HttpPost("{ChartName}/TaskActionPut/{TaskName}/Item/{ItemName}", Name = "PutItemStatus")]
+        [HttpPost("{ChartName}/TaskActionPutDown/{TaskName}/Item/{ItemName}", Name = "PutItemStatus")]
         public async  Task<IActionResult> PutItemStatus(string ChartName, string TaskName, string ItemName)
         {
             string RouteCode = "Ok";
@@ -37,11 +37,9 @@ namespace AardvarkREST.Controllers
             return Ok(item);
         }
 
-        [HttpPost("{ChartName}/TaskActionExtract/{TaskName}/Item/{ItemName}", Name = "ExtractItem")]
+        [HttpPost("{ChartName}/TaskActionTakeOut/{TaskName}/Item/{ItemName}", Name = "ExtractItem")]
         public async Task<IActionResult> ExtractItem(string ChartName, string TaskName, string ItemName)
         {
-            string RouteCode = "Ok";
-            WFItemTaskStatusValue NewStatus = WFItemTaskStatusValue.Completed;
             var item = await _itemRepository.ItemGetOut(ChartName, TaskName, ItemName);
             return Ok(item);
         }

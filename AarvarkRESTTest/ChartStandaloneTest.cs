@@ -639,7 +639,15 @@ namespace AardvarkRESTIntegrationTest
 
         private async Task<WFItemStatus> ItemDropOff(string ChartName, string TaskName, string ItemName)
         {
-            var returnedItem01 = await PostApiResponseString("api/WFItem/" + ChartName + "/TaskActionPut/" + TaskName + "/Item/" + ItemName, "");
+            var returnedItem01 = await PostApiResponseString("api/WFItem/" + ChartName + "/TaskActionPutDown/" + TaskName + "/Item/" + ItemName, "");
+            string insertedItemString = await returnedItem01.Content.ReadAsStringAsync();
+            WFItemStatus ItemStatus = JsonConvert.DeserializeObject<WFItemStatus>(insertedItemString);
+            return ItemStatus;
+        }
+
+        private async Task<WFItemStatus> ItemPickUp(string ChartName, string TaskName, string ItemName)
+        {
+            var returnedItem01 = await PostApiResponseString("api/WFItem/" + ChartName + "/TaskActionTakeOut/" + TaskName + "/Item/" + ItemName, "");
             string insertedItemString = await returnedItem01.Content.ReadAsStringAsync();
             WFItemStatus ItemStatus = JsonConvert.DeserializeObject<WFItemStatus>(insertedItemString);
             return ItemStatus;
@@ -691,6 +699,37 @@ namespace AardvarkRESTIntegrationTest
             WFItemStatus[] listItemStatuses = JsonConvert.DeserializeObject<WFItemStatus[]>(allItemTasksString);
 
             Assert.True(listItemStatuses.Count() >= 2, string.Format("Number of tasks {0}, expected {1}", listItemStatuses.Count(), 2));
+        }
+
+        [Fact]
+        public async Task Return_032_SuccessGetPutItem()
+        {
+            string aRoute = "Ok";
+            string aChart = "TestChart";
+            string aTask01 = "InTask";
+            string aTask02 = "Process";
+
+            string aItemName = Guid.NewGuid().ToString();
+
+            RemoveAllRoutes();
+
+            Task<WFRoute> TaskRouteA02 = PostRoute(aChart, aTask01, aTask02, aRoute);
+            TaskRouteA02.Wait();
+
+            Task<WFItemStatus> inserted = ItemDropOff(aChart, aTask01, aItemName);
+            inserted.Wait();
+            WFItemStatus ItemStatus01 = inserted.Result;
+
+            string allItemTasksString = await GetApiResponseString("api/WFItem/" + aChart + "/Item/" + aItemName, "");
+            WFItemStatus[] listItemStatuses = JsonConvert.DeserializeObject<WFItemStatus[]>(allItemTasksString);
+            Assert.True(listItemStatuses.Count() >= 2, string.Format("Number of tasks {0}, expected {1}", listItemStatuses.Count(), 2));
+            IEnumerable<WFItemStatus> ProcessStatus = listItemStatuses.Where(statusrec => statusrec.TaskName == aTask02);
+            Assert.True(ProcessStatus.Count() == 1, string.Format("Number of items on Process task {0}, expected {1}", ProcessStatus.Count(), 1));
+
+            Task<WFItemStatus> PickedForProcess = ItemPickUp(aChart, aTask02, aItemName);
+            PickedForProcess.Wait();
+            WFItemStatus itemAtprocess = PickedForProcess.Result;
+            Assert.True((itemAtprocess.ItemName == aItemName) && (itemAtprocess.ItemTaskStatus == WFItemTaskStatusValue.InProcess), "Item Get by name heve wrong name and status");
         }
 
 
